@@ -15,6 +15,12 @@ class _PostEditPageState extends State<PostEditPage> {
 //  已选中图片列表
   List<AssetEntity> selectedAssets = [];
 
+//  是否开始拖拽
+  bool isDragNow = false;
+
+//  是否将要删除
+  bool isWillRemove = false;
+
 //  图片列表
   Widget _buildPhotosList() {
     return Padding(
@@ -55,9 +61,9 @@ class _PostEditPageState extends State<PostEditPage> {
         // if (result == null) {
         //   return;
         // }
-        if(result!=null) {
+        if (result != null) {
           setState(
-                () {
+            () {
               selectedAssets = result;
             },
           );
@@ -78,32 +84,129 @@ class _PostEditPageState extends State<PostEditPage> {
 
   ///  图片缩略图的Item
   Widget _buildPhotoItem(AssetEntity asset, double imageSize) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (BuildContext context) {
-            return GalleryWidget(
-              initialIndex: selectedAssets.indexOf(asset),
-              items: selectedAssets,
-            );
-          }),
+    // 图片缩略图代码抽取
+    Widget _photoItem(double? opacity) => Container(
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(2),
+          ),
+          child: AssetEntityImage(
+            asset,
+            width: imageSize,
+            height: imageSize,
+            fit: BoxFit.cover,
+            // 这里设置不需要原图显示，缩略图无需原图，非常消耗资源和性能，造成卡顿
+            isOriginal: false,
+            opacity: opacity != null ? AlwaysStoppedAnimation(opacity) : null,
+          ),
         );
+
+    return Draggable<AssetEntity>(
+      data: asset,
+//      开始拖拽时
+      onDragStarted: () {
+        setState(() {
+          isDragNow = true;
+        });
       },
-      child: Container(
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(2),
-        ),
-        child: AssetEntityImage(
-          asset,
-          width: imageSize,
-          height: imageSize,
-          fit: BoxFit.cover,
-          // 这里设置不需要原图显示，缩略图无需原图，非常消耗资源和性能，造成卡顿
-          isOriginal: false,
+//      拖拽结束时
+      onDragEnd: (DraggableDetails details) {
+        print("${details.velocity}");
+        setState(() {
+          isDragNow = false;
+        });
+      },
+      // 当draggable被拖放并被DragTarget接受时调用
+      onDragCompleted: () {},
+      // 当拖放对象未被DragTarget接受而被拖放时调用
+      onDraggableCanceled: (Velocity velocity, Offset offset) {
+        setState(() {
+          isDragNow = false;
+        });
+      },
+      // 拖拽时的样式
+      feedback: _photoItem(null),
+      // 拖拽后原本位置的样式
+      childWhenDragging: _photoItem(0.3),
+      // 不拖拽时的样式
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (BuildContext context) {
+              return GalleryWidget(
+                initialIndex: selectedAssets.indexOf(asset),
+                items: selectedAssets,
+              );
+            }),
+          );
+        },
+        child: Container(
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(2),
+          ),
+          child: AssetEntityImage(
+            asset,
+            width: imageSize,
+            height: imageSize,
+            fit: BoxFit.cover,
+            // 这里设置不需要原图显示，缩略图无需原图，非常消耗资源和性能，造成卡顿
+            isOriginal: false,
+          ),
         ),
       ),
+    );
+  }
+
+//  删除的bar
+  Widget _buildRemoveBar() {
+    return DragTarget<AssetEntity>(
+      builder: (BuildContext context, List<Object?> candidateData,
+          List<dynamic> rejectedData) {
+        return Container(
+          width: double.infinity,
+          height: 100,
+          color: isWillRemove ? Colors.red[600] : Colors.red[300],
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.delete,
+                color: Colors.white,
+              ),
+              Text(
+                "拖拽到这里删除",
+                style: TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+        );
+      },
+      //   调用以确定此小部件是否允许接收在此拖动目标上拖动的给定数据块。当一段数据进入目标时调用。
+      //   如果数据被拖放，接下来是onAccept和onAcceptWithDetails方法，如果拖放离开目标，接下来是onLeave方法
+      onWillAccept: (data) {
+        print("onWillAccept");
+        setState(() {
+          isWillRemove = true;
+        });
+        return true;
+      },
+      // 当被允许接收的数据块被拖放到此拖动目标上时调用
+      onAccept: (AssetEntity data) {
+        print("onAccept：drag target image is ${data}");
+        setState(() {
+          selectedAssets.remove(data);
+          isWillRemove = false;
+        });
+      },
+
+      onLeave: (data) {
+        print("leave");
+        setState(() {
+          isWillRemove = false;
+        });
+      },
     );
   }
 
@@ -112,6 +215,7 @@ class _PostEditPageState extends State<PostEditPage> {
     return Column(
       children: [
         _buildPhotosList(),
+        Spacer(),
       ],
     );
   }
@@ -121,6 +225,7 @@ class _PostEditPageState extends State<PostEditPage> {
     return Scaffold(
       appBar: AppBar(),
       body: _mainView(),
+      bottomSheet: isDragNow ? _buildRemoveBar() : null,
     );
   }
 }
