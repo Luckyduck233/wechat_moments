@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:wechat_moments/utils/config.dart';
+import 'package:wechat_moments/widgets/gallery.dart';
 
 class PostEditPage extends StatefulWidget {
   const PostEditPage({Key? key}) : super(key: key);
@@ -42,17 +43,25 @@ class _PostEditPageState extends State<PostEditPage> {
   Widget _buildAddImageButton(BuildContext context, double imageSize) {
     return GestureDetector(
       onTap: () async {
-        // 这里将 已获取的图片列表 传入AssetPickerConfig，它会自动识别 已获取的图片列表 并自动勾选
+        // 这里是读取了图片的一些信息例如图片大小时间经纬度之类的
         List<AssetEntity>? result = await AssetPicker.pickAssets(
           context,
           pickerConfig: AssetPickerConfig(
+            // 这里将 已获取的图片列表 传入AssetPickerConfig，它会自动识别 已获取的图片列表 并自动勾选
             selectedAssets: selectedAssets,
             maxAssets: maxAssets,
           ),
         );
-        setState(() {
-          selectedAssets = result ?? [];
-        });
+        // if (result == null) {
+        //   return;
+        // }
+        if(result!=null) {
+          setState(
+                () {
+              selectedAssets = result;
+            },
+          );
+        }
       },
       child: Container(
         width: imageSize,
@@ -69,18 +78,31 @@ class _PostEditPageState extends State<PostEditPage> {
 
   ///  图片缩略图的Item
   Widget _buildPhotoItem(AssetEntity asset, double imageSize) {
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(2),
-      ),
-      child: AssetEntityImage(
-        asset,
-        width: imageSize,
-        height: imageSize,
-        fit: BoxFit.cover,
-        // 这里设置不需要原图显示，缩略图无需原图，非常消耗资源和性能，造成卡顿
-        isOriginal: false,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (BuildContext context) {
+            return GalleryWidget(
+              initialIndex: selectedAssets.indexOf(asset),
+              items: selectedAssets,
+            );
+          }),
+        );
+      },
+      child: Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(2),
+        ),
+        child: AssetEntityImage(
+          asset,
+          width: imageSize,
+          height: imageSize,
+          fit: BoxFit.cover,
+          // 这里设置不需要原图显示，缩略图无需原图，非常消耗资源和性能，造成卡顿
+          isOriginal: false,
+        ),
       ),
     );
   }
@@ -89,18 +111,6 @@ class _PostEditPageState extends State<PostEditPage> {
   Widget _mainView() {
     return Column(
       children: [
-        // 选取图片的按钮
-        ElevatedButton(
-          onPressed: () async {
-            // 这里是读取了图片的一些信息例如图片大小时间经纬度之类的
-            List<AssetEntity>? result = await AssetPicker.pickAssets(context);
-            print("${result?.length}");
-            setState(() {
-              selectedAssets = result ?? [];
-            });
-          },
-          child: Text("选取图片"),
-        ),
         _buildPhotosList(),
       ],
     );
