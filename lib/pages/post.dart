@@ -21,6 +21,12 @@ class _PostEditPageState extends State<PostEditPage> {
 //  是否将要删除
   bool isWillRemove = false;
 
+//  是否将要拖拽
+  bool isWillOrder = false;
+
+//  被拖拽的id
+  late String targetAssetId;
+
 //  图片列表
   Widget _buildPhotosList() {
     return Padding(
@@ -28,7 +34,8 @@ class _PostEditPageState extends State<PostEditPage> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           //(获取最大约束的值 减去 图片之间间隙的总数)/每行图片数量
-          final double imageSize = (constraints.maxWidth - spacing * 2) / 3;
+          final double imageSize =
+              (constraints.maxWidth - spacing * 2 - imageBorder * (2 * 3)) / 3;
           return Wrap(
             spacing: spacing,
             runSpacing: spacing,
@@ -58,6 +65,7 @@ class _PostEditPageState extends State<PostEditPage> {
             maxAssets: maxAssets,
           ),
         );
+        print("${result}");
         // if (result == null) {
         //   return;
         // }
@@ -105,20 +113,24 @@ class _PostEditPageState extends State<PostEditPage> {
       data: asset,
 //      开始拖拽时
       onDragStarted: () {
+        print("onDragStarted-${asset.id}");
         setState(() {
           isDragNow = true;
         });
       },
 //      拖拽结束时
       onDragEnd: (DraggableDetails details) {
-        print("${details.velocity}");
+        print("onDragStarted-${asset.id}");
         setState(() {
           isDragNow = false;
+          isWillOrder = false;
         });
       },
       // 当draggable被拖放并被DragTarget接受时调用
-      onDragCompleted: () {},
-      // 当拖放对象未被DragTarget接受而被拖放时调用
+      onDragCompleted: () {
+        print("onDragStarted-${asset.id}");
+      },
+        // 当拖放对象未被DragTarget接受而被拖放时调用
       onDraggableCanceled: (Velocity velocity, Offset offset) {
         setState(() {
           isDragNow = false;
@@ -129,32 +141,96 @@ class _PostEditPageState extends State<PostEditPage> {
       // 拖拽后原本位置的样式
       childWhenDragging: _photoItem(0.3),
       // 不拖拽时的样式
-      child: GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (BuildContext context) {
-              return GalleryWidget(
-                initialIndex: selectedAssets.indexOf(asset),
-                items: selectedAssets,
+      child: DragTarget<AssetEntity>(
+        onWillAccept: (data) {
+          print("onWillAccept-${data?.id}");
+
+          setState(() {
+            isWillOrder = true;
+            targetAssetId = asset.id;
+          });
+          return true;
+        },
+        onAccept: (data) {
+          print("onAccept-${data.id}");
+          // // 从队列中删除拖拽对象
+
+          // final int index = selectedAssets.indexOf(data);
+          // print("从队列中删除拖拽对象的index-${index}");
+          //
+          // selectedAssets.removeAt(index);
+          // //
+          // int targetIndex = selectedAssets.indexOf(asset);
+          // print("目标需要插入的index-${targetIndex}");
+          // print("${selectedAssets.length}");
+          // // if(targetAssetId==selectedAssets.length-1){
+          // //   targetIndex++;
+          // // }
+          // selectedAssets.insert(targetIndex, data);
+
+          // 0 当前元素位置
+          int targetIndex = selectedAssets.indexWhere((element) {
+            return element.id == asset.id;
+          });
+
+          // 1 删除原来的
+          selectedAssets.removeWhere((element) {
+            return element.id == data.id;
+          });
+
+          // 2 插入到目标前面
+          selectedAssets.insert(targetIndex, data);
+
+          setState(() {
+            isWillOrder = false;
+            targetAssetId = "";
+          });
+        },
+        onLeave: (data) {
+          print("onLeave-${data?.id}");
+          setState(() {
+            isWillOrder = false;
+            targetAssetId = "";
+          });
+        },
+        builder: (BuildContext context, List<AssetEntity?> candidateData,
+            List<dynamic> rejectedData) {
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (BuildContext context) {
+                    return GalleryWidget(
+                      initialIndex: selectedAssets.indexOf(asset),
+                      items: selectedAssets,
+                    );
+                  },
+                ),
               );
-            }),
+            },
+            child: Container(
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(2),
+                border: (isWillOrder && targetAssetId == asset.id)
+                    ? Border.all(
+                        color: accentColor,
+                        width: imageBorder,
+                      )
+                    : null,
+              ),
+              child: AssetEntityImage(
+                asset,
+                width: imageSize,
+                height: imageSize,
+                fit: BoxFit.cover,
+                // 这里设置不需要原图显示，缩略图无需原图，非常消耗资源和性能，造成卡顿
+                isOriginal: false,
+              ),
+            ),
           );
         },
-        child: Container(
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(2),
-          ),
-          child: AssetEntityImage(
-            asset,
-            width: imageSize,
-            height: imageSize,
-            fit: BoxFit.cover,
-            // 这里设置不需要原图显示，缩略图无需原图，非常消耗资源和性能，造成卡顿
-            isOriginal: false,
-          ),
-        ),
       ),
     );
   }
@@ -223,7 +299,20 @@ class _PostEditPageState extends State<PostEditPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        actions: [
+          IconButton(
+            onPressed: () {
+              if(selectedAssets.length>0){
+                for(int i =0;i<selectedAssets.length;i++){
+                  print("${selectedAssets[i].id}");
+                }
+              }
+            },
+            icon: Icon(Icons.ads_click),
+          ),
+        ],
+      ),
       body: _mainView(),
       bottomSheet: isDragNow ? _buildRemoveBar() : null,
     );
