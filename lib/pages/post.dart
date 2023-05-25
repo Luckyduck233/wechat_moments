@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
+import 'package:wechat_camera_picker/wechat_camera_picker.dart';
 import 'package:wechat_moments/utils/config.dart';
 import 'package:wechat_moments/widgets/gallery.dart';
 
@@ -44,7 +45,8 @@ class _PostEditPageState extends State<PostEditPage> {
                 _buildPhotoItem(asset, imageSize),
               //加入图片末尾的按钮
               if (selectedAssets.length < maxAssets)
-                _buildAddImageButton(context, imageSize)
+                _buildAddImageButton(context, imageSize),
+              _buildTakeImageButton(context, imageSize)
             ],
           );
         },
@@ -83,6 +85,38 @@ class _PostEditPageState extends State<PostEditPage> {
         color: Colors.black12,
         child: Icon(
           Icons.add,
+          size: 45,
+          color: Colors.black38,
+        ),
+      ),
+    );
+  }
+
+  /// 缩略图末尾拍摄按钮
+  Widget _buildTakeImageButton(BuildContext context, double imageSize) {
+    return GestureDetector(
+      onTap: () async {
+        final AssetEntity? result = await CameraPicker.pickFromCamera(
+          context,
+          pickerConfig: const CameraPickerConfig(
+          // 选择器是否可以录像
+            enableRecording: true,
+          ),
+        );
+
+        if (result != null) {
+          print("${result.relativePath}");
+          setState(() {
+            selectedAssets.add(result);
+          });
+        }
+      },
+      child: Container(
+        width: imageSize,
+        height: imageSize,
+        color: Colors.black12,
+        child: Icon(
+          Icons.photo_camera,
           size: 45,
           color: Colors.black38,
         ),
@@ -130,7 +164,7 @@ class _PostEditPageState extends State<PostEditPage> {
       onDragCompleted: () {
         print("onDragStarted-${asset.id}");
       },
-        // 当拖放对象未被DragTarget接受而被拖放时调用
+      // 当拖放对象未被DragTarget接受而被拖放时调用
       onDraggableCanceled: (Velocity velocity, Offset offset) {
         setState(() {
           isDragNow = false;
@@ -303,8 +337,8 @@ class _PostEditPageState extends State<PostEditPage> {
         actions: [
           IconButton(
             onPressed: () {
-              if(selectedAssets.length>0){
-                for(int i =0;i<selectedAssets.length;i++){
+              if (selectedAssets.length > 0) {
+                for (int i = 0; i < selectedAssets.length; i++) {
                   print("${selectedAssets[i].id}");
                 }
               }

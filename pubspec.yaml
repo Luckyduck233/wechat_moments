@@ -38,6 +38,9 @@ dependencies:
   wechat_assets_picker: ^8.5.0
   extended_image: ^8.0.0
 
+#  相机拍摄
+  wechat_camera_picker: ^3.8.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
