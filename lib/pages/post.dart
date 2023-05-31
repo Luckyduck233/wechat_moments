@@ -2,8 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:wechat_camera_picker/wechat_camera_picker.dart';
+import 'package:wechat_moments/utils/asset_picker.dart';
 import 'package:wechat_moments/utils/config.dart';
 import 'package:wechat_moments/widgets/gallery.dart';
+
+enum PostType {
+  image,
+  video,
+}
 
 class PostEditPage extends StatefulWidget {
   const PostEditPage({Key? key}) : super(key: key);
@@ -13,6 +19,9 @@ class PostEditPage extends StatefulWidget {
 }
 
 class _PostEditPageState extends State<PostEditPage> {
+//  发布类型
+  PostType? postType;
+
 //  已选中图片列表
   List<AssetEntity> selectedAssets = [];
 
@@ -58,26 +67,49 @@ class _PostEditPageState extends State<PostEditPage> {
   Widget _buildAddImageButton(BuildContext context, double imageSize) {
     return GestureDetector(
       onTap: () async {
-        // 这里是读取了图片的一些信息例如图片大小时间经纬度之类的
-        List<AssetEntity>? result = await AssetPicker.pickAssets(
-          context,
-          pickerConfig: AssetPickerConfig(
-            // 这里将 已获取的图片列表 传入AssetPickerConfig，它会自动识别 已获取的图片列表 并自动勾选
-            selectedAssets: selectedAssets,
-            maxAssets: maxAssets,
-          ),
-        );
-        print("${result}");
-        // if (result == null) {
+        // // 这里是读取了图片的一些信息例如图片大小时间经纬度之类的
+        // List<AssetEntity>? result = await AssetPicker.pickAssets(
+        //   context,
+        //   pickerConfig: AssetPickerConfig(
+        //     // 这里将 已获取的图片列表 传入AssetPickerConfig，它会自动识别 已获取的图片列表 并自动勾选
+        //     selectedAssets: selectedAssets,
+        //     maxAssets: maxAssets,
+        //   ),
+        // );
+        // print("${result}");
+        // // if (result == null) {
+        // //   return;
+        // // }
+        // if (result != null) {
+        //   setState(
+        //     () {
+        //       selectedAssets = result;
+        //     },
+        //   );
+        // }
+
+        // List<AssetEntity>? asset = await MyAssetPicker.getAsset(
+        //   context: context,
+        //   selectedAssets: selectedAssets,
+        // );
+        //
+        // if (asset != null) {
+        //   print(asset);
+        // } else {
         //   return;
         // }
-        if (result != null) {
-          setState(
-            () {
-              selectedAssets = result;
-            },
-          );
-        }
+        //
+        // setState(() {
+        //   selectedAssets = asset;
+        // });
+
+        var photoAsset =await MyAssetPicker.takePhoto(context);
+
+        setState(() {
+          print("xxxxxxxxxxx${photoAsset}");
+          selectedAssets.add(photoAsset!);
+        });
+        print(photoAsset);
       },
       child: Container(
         width: imageSize,
@@ -99,7 +131,7 @@ class _PostEditPageState extends State<PostEditPage> {
         final AssetEntity? result = await CameraPicker.pickFromCamera(
           context,
           pickerConfig: const CameraPickerConfig(
-          // 选择器是否可以录像
+            // 选择器是否可以录像
             enableRecording: true,
           ),
         );
