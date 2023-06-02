@@ -5,6 +5,9 @@ import 'package:wechat_camera_picker/wechat_camera_picker.dart';
 import 'package:wechat_moments/utils/asset_picker.dart';
 import 'package:wechat_moments/utils/config.dart';
 import 'package:wechat_moments/widgets/gallery.dart';
+import 'package:wechat_moments/widgets/player.dart';
+
+import '../utils/compress.dart';
 
 enum PostType {
   image,
@@ -37,6 +40,9 @@ class _PostEditPageState extends State<PostEditPage> {
 //  被拖拽的id
   late String targetAssetId;
 
+//  已压缩的视频文件
+  CompressMediaFile? videoCompressMediaFile;
+
 //  图片列表
   Widget _buildPhotosList() {
     return Padding(
@@ -66,7 +72,7 @@ class _PostEditPageState extends State<PostEditPage> {
   /// 缩略图末尾添加按钮
   Widget _buildAddImageButton(BuildContext context, double imageSize) {
     return GestureDetector(
-      onTap: () async {
+      onTap: (){
         // // 这里是读取了图片的一些信息例如图片大小时间经纬度之类的
         // List<AssetEntity>? result = await AssetPicker.pickAssets(
         //   context,
@@ -102,14 +108,43 @@ class _PostEditPageState extends State<PostEditPage> {
         // setState(() {
         //   selectedAssets = asset;
         // });
-
-        var photoAsset =await MyAssetPicker.takePhoto(context);
-
-        setState(() {
-          print("xxxxxxxxxxx${photoAsset}");
-          selectedAssets.add(photoAsset!);
-        });
-        print(photoAsset);
+        showModalBottomSheet(
+          context: context,
+          builder: (BuildContext context) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: Icon(Icons.camera_alt),
+                  title: Text('拍照'),
+                  onTap: () async {
+                    AssetEntity? asset =await MyAssetPicker.takePhoto(context);
+                    if(asset==null)return;
+                    setState(() {
+                      postType=PostType.image;
+                      selectedAssets.add(asset);
+                    });
+                    Navigator.pop(context);
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.videocam),
+                  title: Text('摄像'),
+                  onTap: () async{
+                    AssetEntity? asset =await MyAssetPicker.takeVideo(context);
+                    if(asset==null)return;
+                    setState(() {
+                      postType=PostType.video;
+                      selectedAssets.clear();
+                      selectedAssets.add(asset);
+                    });
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            );
+          },
+        );
       },
       child: Container(
         width: imageSize,
@@ -356,8 +391,22 @@ class _PostEditPageState extends State<PostEditPage> {
   Widget _mainView() {
     return Column(
       children: [
-        _buildPhotosList(),
-        Spacer(),
+        // 相册列表
+        if (postType == PostType.image) _buildPhotosList(),
+
+        // 视频播放器
+        if (postType == PostType.video)
+          VideoPlayerWidget(
+            initAsset: selectedAssets.first,
+            onCompleted: (value) => videoCompressMediaFile = value,
+          ),
+
+        // 添加按钮
+        if (postType == null && selectedAssets.isEmpty)
+          Padding(
+            padding: const EdgeInsets.all(spacing),
+            child: _buildAddImageButton(context, 100),
+          ),
       ],
     );
   }

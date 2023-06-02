@@ -19,13 +19,13 @@ import '../utils/toast.dart';
 class VideoPlayerWidget extends StatefulWidget {
   const VideoPlayerWidget({
     Key? key,
-    this.videoController,
+    this.controller,
     this.initAsset,
     this.onCompleted,
   }) : super(key: key);
 
   /// chewie 视频播放控制器
-  final ChewieController? videoController;
+  final ChewieController? controller;
 
   /// 视频资源
   final AssetEntity? initAsset;
@@ -77,7 +77,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   @override
   void dispose() {
     _videoController?.dispose();
-    if (widget.videoController == null){
+    if (widget.controller == null){
       _chewieController?.dispose();
       _videoController?.dispose();
     }
@@ -105,7 +105,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     // 2. 安全检查, 容错
     if (_asset == null) return;
 
-    // 3. 清理资源，释放播放器对象
+    // 3. 先清理资源，释放播放器对象，假如在播放下一个视频之前上一个播放器控制器还没有释放的话就会出现错误
     _videoController?.dispose();
 
     //
@@ -120,7 +120,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       await _videoController!.initialize();
 
       // chewie 初始化
-      _chewieController = widget.videoController ??
+      _chewieController = widget.controller ??
           ChewieController(
             videoPlayerController: _videoController!,
             autoPlay: false,

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:video_compress/video_compress.dart';
@@ -16,9 +17,9 @@ class CompressMediaFile {
 
 ///压缩类
 class DuCompress {
-  /// 压缩图片
-  static Future<XFile?> image(
-    File file,
+  /// 压缩File类型的图片
+  static Future<XFile?> compressAndGetFile(
+    XFile file,
     String targetPath, {
     int minWidth = 1920,
     int minHeight = 1080,
@@ -32,8 +33,23 @@ class DuCompress {
       minWidth: minWidth,
       minHeight: minHeight,
       // 压缩的质量
-      quality: 80,
+      quality: 70,
       // 转换的格式
+      format: CompressFormat.jpeg,
+    );
+  }
+
+  ///  压缩Uint8List类型的图片
+  static Future<Uint8List> compressWithList(
+    Uint8List uint8list, {
+    int minWidth = 1920,
+    int minHeight = 1080,
+  }) async {
+    return await FlutterImageCompress.compressWithList(
+      uint8list,
+      minWidth: minWidth,
+      minHeight: minHeight,
+      quality: 70,
       format: CompressFormat.jpeg,
     );
   }
@@ -48,8 +64,9 @@ class DuCompress {
           includeAudio: true,
           frameRate: 25),
       VideoCompress.getFileThumbnail(
+
         file.path,
-        quality: 80,
+        quality: 70,
         position: -1000,
       ),
     ]);
