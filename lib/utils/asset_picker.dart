@@ -1,10 +1,7 @@
-
-
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:wechat_moments/widgets/camera/camera.dart';
-
 
 import 'config.dart';
 
@@ -52,5 +49,28 @@ class MyAssetPicker {
       ),
     );
     return result;
+  }
+
+  ///弹出底部选择栏
+  static Future<T?> showBottomSheet<T>(BuildContext context,
+      {Widget? child}) {
+    return showModalBottomSheet(
+      context: context,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(10),
+          topRight: Radius.circular(10),
+        ),
+      ),
+      builder: (BuildContext context) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(
+            vertical: 16,
+          ),
+          child: child,
+        );
+      },
+    );
   }
 }

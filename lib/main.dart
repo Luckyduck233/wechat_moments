@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:wechat_moments/pages/post.dart';
+import 'package:wechat_moments/pages/index.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,7 +16,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: PostEditPage(),
+      home: TimeLinePage(),
     );
   }
 }

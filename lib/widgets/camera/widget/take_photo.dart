@@ -61,9 +61,7 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
         // 压缩图片
         Uint8List compressList =await DuCompress.compressWithList(unCompressU8l);
 
-        File newFile =await saveImage(compressList);
-        
-        if (newFile == null) return;
+        File? newFile =await saveImage(compressList);
 
         final AssetEntity? asset = await PhotoManager.editor
             .saveImage(File(newFile.path).readAsBytesSync(), title: fileTitle);
