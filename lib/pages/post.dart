@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:wechat_camera_picker/wechat_camera_picker.dart';
-import 'package:wechat_moments/utils/bottom_sheet.dart';
-import 'package:wechat_moments/utils/config.dart';
-import 'package:wechat_moments/widgets/gallery.dart';
-import 'package:wechat_moments/widgets/player.dart';
+import 'package:wechat_moments/utils/index.dart';
+import 'package:wechat_moments/widgets/index.dart';
 
-import '../utils/compress.dart';
+import '../entity/index.dart';
 
 enum PostType {
   image,
@@ -47,6 +43,12 @@ class _PostEditPageState extends State<PostEditPage> {
 //  被拖拽的id
   late String _targetAssetId;
 
+//  内容输入控制器
+  final TextEditingController _contentController = TextEditingController();
+
+//  菜单列表
+  List<MenuItemModel> _menus = [];
+
 //  已压缩的视频文件
   // ignore: unused_field
   CompressMediaFile? _videoCompressMediaFile;
@@ -57,6 +59,23 @@ class _PostEditPageState extends State<PostEditPage> {
     super.initState();
     _postType = widget.postType;
     _selectedAssets = widget.selectedAssets ?? [];
+
+    _menus = [
+      MenuItemModel(icon: Icons.location_on_outlined, title: "所在位置"),
+      MenuItemModel(icon: Icons.alternate_email_outlined, title: "提醒谁看"),
+      MenuItemModel(
+          icon: Icons.person_outline_outlined,
+          title: "谁可以看",
+          rightText: "公开",
+          onTap: () {}),
+    ];
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    _contentController.dispose();
   }
 
 //  图片列表
@@ -391,7 +410,7 @@ class _PostEditPageState extends State<PostEditPage> {
     );
   }
 
-//  删除的bar
+  ///  删除的bar
   Widget _buildRemoveBar() {
     return DragTarget<AssetEntity>(
       builder: (BuildContext context, List<Object?> candidateData,
@@ -442,44 +461,119 @@ class _PostEditPageState extends State<PostEditPage> {
     );
   }
 
+  ///内容输入框
+  Widget _buildContentInput() {
+    return LimitedBox(
+      maxHeight: 180,
+      child: TextField(
+        maxLines: null,
+        maxLength: 20,
+        controller: _contentController,
+        decoration: InputDecoration(
+          hintText: "这一刻的想法...",
+          hintStyle: const TextStyle(
+            color: Colors.black12,
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
+          ),
+          border: InputBorder.none,
+          // 显示输入框右下角当前字数和最大可输入字数
+          counterText: _contentController.text.isEmpty ? "" : null,
+        ),
+        // 当文字输入控制器发生变化时会发生一次回调
+        onChanged: (value) {
+          setState(() {});
+        },
+      ),
+    );
+  }
+
+  ///菜单项
+  Widget _buildMenus() {
+    List<Widget> ws = [];
+    for (int i = 0; i < _menus.length; i++) {
+      var menu = _menus[i];
+      
+      if(i==0){
+        ws.add(MyDividerWidget());
+      }
+      ws.add(
+        ListTile(
+          leading: Icon(menu.icon),
+          title: Text(menu.title!),
+          trailing: Text(menu.rightText ?? ""),
+          onTap: menu.onTap,
+        ),
+      );
+      ws.add(MyDividerWidget());
+    }
+    return Padding(
+      padding: const EdgeInsets.only(top: 200),
+      child: Column(
+        children: ws,
+      ),
+    );
+  }
+
   //  主视图
   Widget _mainView() {
-    return Column(
-      children: [
-        // 相册列表
-        if (_postType == PostType.image) _buildPhotosList(),
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(pagePadding),
+          child: Column(
+            children: [
+              // 内容输入区域
+              _buildContentInput(),
+              // 相册列表
+              if (_postType == PostType.image) _buildPhotosList(),
+              // 视频播放器
+              if (_postType == PostType.video)
+                VideoPlayerWidget(
+                  initAsset: _selectedAssets.first,
+                  onCompleted: (value) => _videoCompressMediaFile = value,
+                ),
 
-        // 视频播放器
-        if (_postType == PostType.video)
-          VideoPlayerWidget(
-            initAsset: _selectedAssets.first,
-            onCompleted: (value) => _videoCompressMediaFile = value,
+              // 添加按钮
+              if (_postType == null && _selectedAssets.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.all(spacing),
+                  child: _buildAddImageButton(context, 100),
+                ),
+              _buildMenus(),
+            ],
           ),
-
-        // 添加按钮
-        if (_postType == null && _selectedAssets.isEmpty)
-          Padding(
-            padding: const EdgeInsets.all(spacing),
-            child: _buildAddImageButton(context, 100),
-          ),
-      ],
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        actions: [
-          IconButton(
-            onPressed: () {
-              if (_selectedAssets.length > 0) {
-                for (int i = 0; i < _selectedAssets.length; i++) {
-                  print("${_selectedAssets[i].id}");
-                }
-              }
+      appBar: MyAppBar(
+        // 左侧返回
+        leading: Padding(
+          padding: const EdgeInsets.only(left: pagePadding),
+          child: GestureDetector(
+            onTap: () {
+              Navigator.of(context).pop();
             },
-            icon: Icon(Icons.ads_click),
+            child: const Icon(
+              Icons.arrow_back_ios_new_outlined,
+              color: Colors.grey,
+            ),
+          ),
+        ),
+        //右侧发布
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: pagePadding),
+            child: ElevatedButton(
+              onPressed: () {},
+              child: const Text("发布"),
+            ),
           ),
         ],
       ),

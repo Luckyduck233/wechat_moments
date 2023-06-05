@@ -1,35 +1,34 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class SlideAppbarWidget extends StatelessWidget implements PreferredSizeWidget {
-  const SlideAppbarWidget({
-    Key? key,
-    required this.child,
-    required this.controller,
-    required this.visible,
-  }) : super(key: key);
+class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
+  const MyAppBar({super.key, this.colors, this.elevation, this.leading, this.actions});
 
-  final PreferredSizeWidget child;
-  final AnimationController controller;
-  final bool visible;
+  ///appbar的背景颜色
+  final Color? colors;
+  ///appbar的海拔阴影
+  final double? elevation;
+  /// 在[title]之前的小组件
+  final Widget? leading;
+  /// 在[title]之后的小组件
+  final List<Widget>? actions;
 
   @override
   // TODO: implement preferredSize
-  Size get preferredSize => child.preferredSize;
+  Size get preferredSize => Size.fromHeight(30);
+
+  Widget _mainView(){
+    return AppBar(
+      backgroundColor: colors ?? Colors.transparent,
+      elevation: elevation ?? 0,
+      leading:leading,
+      actions: actions,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    visible ? controller.reverse() : controller.forward();
-    return SlideTransition(
-      position: Tween<Offset>(
-        begin: Offset.zero,
-        end: Offset(0, -1),
-      ).animate(
-        CurvedAnimation(
-          parent: controller,
-          curve: Curves.fastOutSlowIn,
-        ),
-      ),
-      child: child,
-    );
+    return _mainView();
   }
+
 }

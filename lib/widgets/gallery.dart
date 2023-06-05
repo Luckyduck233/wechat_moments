@@ -1,7 +1,7 @@
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
-import 'package:wechat_moments/widgets/appbar.dart';
+import 'package:wechat_moments/widgets/slide_appbar.dart';
 
 /// 图像浏览器
 class GalleryWidget extends StatefulWidget {

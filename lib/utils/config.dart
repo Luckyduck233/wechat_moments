@@ -7,13 +7,16 @@ const double spacing = 10.0;
 const int maxAssets = 9;
 
 ///强调色
-const Color accentColor=Colors.yellowAccent;
+const Color accentColor = Colors.yellowAccent;
 
 ///文字辅助色
 const Color secondaryTextColor = Colors.lightBlueAccent;
 
 ///图片border
-const double imageBorder=3.0;
+const double imageBorder = 3.0;
 
 /// 视频录制最大时间 秒
 const int maxVideoDuration = 30;
+
+///页面 padding
+const double pagePadding = 12;
