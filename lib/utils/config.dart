@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 
+///Apifox
+///请求朋友圈列表数据接口
+const String apiBaseUrl = "https://mock.apifox.cn/m1/2837307-0-default/";
+///朋友圈列表数据
+const String apiMoments = "/moments";
+const String requestToken = "45DLJcRNodsbpykbih3EHT7sDI80ufUU";
+
 ///间距 default=10
 const double spacing = 10.0;
 
