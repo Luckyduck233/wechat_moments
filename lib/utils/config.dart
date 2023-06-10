@@ -19,6 +19,10 @@ const Color accentColor = Colors.yellowAccent;
 ///文字辅助色
 const Color secondaryTextColor = Colors.lightBlueAccent;
 
+///文字强调色
+const Color textEmphasizeColor = Color.fromRGBO(23, 75, 115, 1);
+
+
 ///图片border
 const double imageBorder = 3.0;
 
@@ -27,3 +31,6 @@ const int maxVideoDuration = 30;
 
 ///页面 padding
 const double pagePadding = 12;
+
+///appbar 朋友圈滚动时appbar颜色
+const Color appbarColorIsScroll = Color(0xFFEDEDED);

@@ -29,7 +29,7 @@ class MyAssetPicker {
     final result = await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (bc) {
-          return CameraPage();
+          return const CameraPage();
         },
       ),
     );

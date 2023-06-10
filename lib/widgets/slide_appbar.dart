@@ -22,7 +22,7 @@ class SlideAppbarWidget extends StatelessWidget implements PreferredSizeWidget {
     return SlideTransition(
       position: Tween<Offset>(
         begin: Offset.zero,
-        end: Offset(0, -1),
+        end: const Offset(0, -1),
       ).animate(
         CurvedAnimation(
           parent: controller,

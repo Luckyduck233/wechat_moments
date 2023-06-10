@@ -5,6 +5,7 @@ import 'package:wechat_moments/pages/index.dart';
 
 import 'package:wechat_moments/utils/index.dart';
 import 'package:wechat_moments/widgets/index.dart';
+import 'package:wechat_moments/widgets/text.dart';
 
 import '../entity/index.dart';
 import '../entity/timeline/result.dart';
@@ -17,7 +18,7 @@ class TimeLinePage extends StatefulWidget {
 }
 
 class _TimeLinePageState extends State<TimeLinePage>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   //用户资料模型
   UserModel? _user;
 
@@ -39,6 +40,12 @@ class _TimeLinePageState extends State<TimeLinePage>
 
 //  动画Tween
   late Animation<double> _sizeTween;
+
+//  滚动控制器
+  final ScrollController _scrollController = ScrollController();
+
+  // appbar 背景颜色透明度
+  double? _appBarBgOpacity = 0.0;
 
   @override
   void initState() {
@@ -75,6 +82,23 @@ class _TimeLinePageState extends State<TimeLinePage>
         curve: Curves.linear,
       ),
     );
+
+    // _scrollController.addListener(() {
+    //   if (_scrollController.position.pixels > 200) {
+    //     double opacity = (_scrollController.position.pixels - 200) / 100;
+    //
+    //     opacity = opacity.clamp(0, 1); // 将透明度限制在0到1之间
+    //
+    //     setState(() {
+    //       _appBarOpacity=opacity;
+    //     });
+    //   } else {
+    //     setState(() {
+    //       _appBarOpacity=0.0;
+    //     });
+    //   }
+    // });
+    _scrollController.addListener(_scrollListener);
   }
 
   //  载入数据
@@ -98,6 +122,26 @@ class _TimeLinePageState extends State<TimeLinePage>
     setState(() {
       _btnMoreOffset = offset;
     });
+  }
+
+//   被滚动组件监听的方法
+  void _scrollListener() {
+    _updateAppbarBgOpacity();
+  }
+
+//  更新appbar的背景颜色
+  void _updateAppbarBgOpacity() {
+    double opacity = (_scrollController.offset - 200) / 100;
+    opacity = opacity.clamp(0, 1);
+    // print("${opacity}");
+    if (_appBarBgOpacity != opacity) {
+      setState(() {
+        _appBarBgOpacity = opacity;
+      });
+    }
+    if (_appBarBgOpacity! >= 1.0) {
+      return;
+    }
   }
 
   //压入发布界面的方法
@@ -208,20 +252,20 @@ class _TimeLinePageState extends State<TimeLinePage>
               ),
             //评论
             if (constraints.maxWidth > 180)
-            TextButton.icon(
-              onPressed: () {},
-              icon: const Icon(
-                Icons.chat_bubble_outline_outlined,
-                color: Colors.white,
-              ),
-              label: const Text(
-                "评论",
-                style: TextStyle(
+              TextButton.icon(
+                onPressed: () {},
+                icon: const Icon(
+                  Icons.chat_bubble_outline_outlined,
                   color: Colors.white,
-                  fontWeight: FontWeight.w400,
+                ),
+                label: const Text(
+                  "评论",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
               ),
-            ),
           ],
         );
       }),
@@ -356,19 +400,23 @@ class _TimeLinePageState extends State<TimeLinePage>
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Color.fromRGBO(23, 75, 115, 1),
+                      color: textEmphasizeColor,
                     ),
                   ),
                   const SpaceVerticalWidget(
                     space: 5,
                   ),
                   // 正文
-                  Text(
-                    item.content,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.black,
-                    ),
+                  // Text(
+                  //   item.content,
+                  //   style: const TextStyle(
+                  //     fontSize: 16,
+                  //     color: Colors.black,
+                  //   ),
+                  // ),
+                  TextMaxLinesWidget(
+                    content: item.content,
+                    maxLines: 2,
                   ),
                   const SpaceVerticalWidget(),
                   // 九宫格图片-如果有图片
@@ -441,11 +489,11 @@ class _TimeLinePageState extends State<TimeLinePage>
                         },
                         child: Container(
                           key: _btnMoreKey,
-                          padding: EdgeInsets.symmetric(horizontal: 2),
+                          padding: const EdgeInsets.symmetric(horizontal: 2),
                           decoration: BoxDecoration(
                             color: Colors.grey[200],
                           ),
-                          child: Icon(
+                          child: const Icon(
                             Icons.more_horiz_outlined,
                           ),
                         ),
@@ -465,6 +513,7 @@ class _TimeLinePageState extends State<TimeLinePage>
   //主视图
   Widget _mainView() {
     return CustomScrollView(
+      controller: _scrollController,
       physics: const BouncingScrollPhysics(),
       slivers: [
         SliverToBoxAdapter(
@@ -478,22 +527,38 @@ class _TimeLinePageState extends State<TimeLinePage>
 
   @override
   Widget build(BuildContext context) {
+    Color startColor = Colors.white; // 起始颜色（白色）
+    Color endColor = Colors.black; // 结束颜色（黑色）
+
+    // 根据opacity而渐变颜色
+    Color? interpolatedColor = ColorTween(begin: startColor, end: endColor)
+        .transform(_appBarBgOpacity!);
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: MyAppBar(
+        title: AnimatedOpacity(
+          opacity: _appBarBgOpacity!,
+          duration: const Duration(microseconds: 1),
+          child: const Text(
+            "朋友圈",
+            style: TextStyle(color: Colors.black, fontSize: 18),
+          ),
+        ),
+        backgroundColor: appbarColorIsScroll.withOpacity(_appBarBgOpacity!),
+        leading: Icon(
+          Icons.arrow_back_ios,
+          color: interpolatedColor,
+        ),
         actions: [
-          Container(
-            margin: EdgeInsets.only(right: spacing),
-            child: IconButton(
-              onPressed: () {
-                _onPublishPage();
-              },
-              icon: Icon(
-                Icons.camera_alt,
-              ),
-            ),
+          IconButton(
+            onPressed: () {
+              _onPublishPage();
+            },
+            icon: Icon(Icons.camera_alt_outlined, color: interpolatedColor),
           )
         ],
+        centerTitle: true,
       ),
       body: _mainView(),
     );

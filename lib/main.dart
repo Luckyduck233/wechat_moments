@@ -28,7 +28,7 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: TimeLinePage(),
+      home: const TimeLinePage(),
     );
   }
 }

@@ -48,7 +48,7 @@ class _CountdownState extends State<Countdown> {
   Widget build(BuildContext context) {
     return Text(
       "${_currentTime.inSeconds}",
-      style: TextStyle(
+      style: const TextStyle(
         color: Colors.white,
         fontSize: 32,
       ),

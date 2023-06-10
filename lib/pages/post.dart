@@ -224,7 +224,7 @@ class _PostEditPageState extends State<PostEditPage> {
         width: imageSize,
         height: imageSize,
         color: Colors.black12,
-        child: Icon(
+        child: const Icon(
           Icons.add,
           size: 45,
           color: Colors.black38,
@@ -256,7 +256,7 @@ class _PostEditPageState extends State<PostEditPage> {
         width: imageSize,
         height: imageSize,
         color: Colors.black12,
-        child: Icon(
+        child: const Icon(
           Icons.photo_camera,
           size: 45,
           color: Colors.black38,
@@ -419,7 +419,7 @@ class _PostEditPageState extends State<PostEditPage> {
           width: double.infinity,
           height: 100,
           color: _isWillRemove ? Colors.red[600] : Colors.red[300],
-          child: Column(
+          child: const Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
@@ -495,7 +495,7 @@ class _PostEditPageState extends State<PostEditPage> {
       var menu = _menus[i];
       
       if(i==0){
-        ws.add(MyDividerWidget());
+        ws.add(const MyDividerWidget());
       }
       ws.add(
         ListTile(
@@ -505,7 +505,7 @@ class _PostEditPageState extends State<PostEditPage> {
           onTap: menu.onTap,
         ),
       );
-      ws.add(MyDividerWidget());
+      ws.add(const MyDividerWidget());
     }
     return Padding(
       padding: const EdgeInsets.only(top: 200),

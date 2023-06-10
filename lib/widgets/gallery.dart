@@ -39,7 +39,7 @@ class _GalleryWidgetState extends State<GalleryWidget>
     visible = widget.isBarVisible ?? true;
     controller = AnimationController(
       vsync: this,
-      duration: Duration(
+      duration: const Duration(
         milliseconds: 400,
       ),
      );

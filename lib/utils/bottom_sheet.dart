@@ -129,7 +129,7 @@ class MyBottomSheet {
           const MyDividerWidget(height: 10),
           //取消
           _buildBtn(
-            child: Text("取消"),
+            child: const Text("取消"),
             onTap: () {
               Navigator.popUntil(context, (route) => route.isFirst);
             },
@@ -143,7 +143,7 @@ class MyBottomSheet {
     return InkWell(
       onTap: onTap,
       child: DefaultTextStyle(
-        style: TextStyle(fontSize: 18, color: Colors.black),
+        style: const TextStyle(fontSize: 18, color: Colors.black),
         child: Container(
           alignment: Alignment.center,
           height: 55,
