@@ -15,7 +15,6 @@ class MyAppBar extends StatelessWidget implements PreferredSizeWidget {
   ///appbar 标题
   final Widget? title;
 
-
   final bool? centerTitle;
 
   @override

@@ -38,7 +38,32 @@ class WxHttpUtil {
 
   ///post请求
   Future<Response> post(String url, {Map<String, dynamic>? data}) async {
-    Response response = await _dio!.post(url, data: data);
+    late Response response;
+    try {
+      response = await _dio!.post(url, data: data);
+    }on DioError catch(e){
+      formatError(e);
+    }
     return response;
+  }
+
+  // error统一处理
+  void formatError(DioError e) {
+    print("post error---------------------------------------------$e");
+    DioErrorType errorType = e.type;
+    MyToast.show("${e.message ?? e.toString()}请检查网络连接");
+    if (errorType == DioErrorType.connectionTimeout) {
+      print("连接超时");
+    } else if (errorType == DioErrorType.receiveTimeout) {
+      print("响应超时");
+    } else if (errorType == DioErrorType.sendTimeout) {
+      print("发送超时");
+    } else if (errorType == DioErrorType.cancel) {
+      print("请求取消");
+    } else if (errorType == DioErrorType.badResponse) {
+      print("出现异常");
+    } else {
+      print("其它异常");
+    }
   }
 }
