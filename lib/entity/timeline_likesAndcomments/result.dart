@@ -5,6 +5,7 @@ class Result {
   User user;
   String publishDate;
   String location;
+  String postType;
   bool isLike;
   List<String> images;
   List<User> likes;
@@ -16,6 +17,7 @@ class Result {
     required this.content,
     required this.user,
     required this.publishDate,
+    required this.postType,
     required this.location,
     required this.isLike,
     required this.images,
@@ -31,6 +33,7 @@ class Result {
     publishDate: json["publishDate"],
     location: json["location"],
     isLike: json["is_like"],
+    postType: json["post_type"],
     images: List<String>.from(json["images"].map((x) => x)),
     likes: List<User>.from(json["likes"].map((x) => User.fromJson(x))),
     comments: List<Comment>.from(json["comments"].map((x) => Comment.fromJson(x))),
@@ -44,6 +47,7 @@ class Result {
     "publishDate": publishDate,
     "location": location,
     "is_like": isLike,
+    "post_type":postType,
     "images": List<dynamic>.from(images.map((x) => x)),
     "likes": List<dynamic>.from(likes.map((x) => x.toJson())),
     "comments": List<dynamic>.from(comments.map((x) => x.toJson())),

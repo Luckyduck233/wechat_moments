@@ -76,6 +76,8 @@ class _TimeLinePageState extends State<TimeLinePage>
 //  输入框焦点
   final FocusNode _focusNodeInput = FocusNode();
 
+
+
   @override
   void initState() {
     // TODO: implement initState
@@ -262,6 +264,7 @@ class _TimeLinePageState extends State<TimeLinePage>
   void _onSwitchCommentBar() {
     setState(() {
       _isShowInput = !_isShowInput;
+      _isShowEmoji = false;
       if (_isShowInput) {
         _focusNodeInput.requestFocus();
       } else {
@@ -274,6 +277,18 @@ class _TimeLinePageState extends State<TimeLinePage>
 //  评论操作
   void _onComment() {
     _onSwitchCommentBar();
+  }
+
+//  跳转到图像浏览界面
+  void _onNavigateToGalleryPage({Result? data}) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (BuildContext ctx) {
+          return GalleryWidget(initialIndex: 1, data: data);
+        },
+      ),
+    );
   }
 
   //点赞菜单
@@ -336,20 +351,24 @@ class _TimeLinePageState extends State<TimeLinePage>
     return SliverList(
         delegate: SliverChildBuilderDelegate(
       (context, index) {
+        // 根据列表索引获取当前列表项所对应的数据
         var item = _items[index];
+        // 传入的参数是本条朋友圈内容的数据
         return _buildListItem(item);
       },
       childCount: _items.length,
     ));
   }
 
-//  列表项
+  // 列表项
+  // 传入的参数是本条朋友圈内容的数据
   Widget _buildListItem(Result item) {
     return Padding(
       padding: const EdgeInsets.all(18.0),
       child: Column(
         children: [
           // 主要内容
+          // 传入的参数是本条朋友圈内容的数据
           _buildMainContent(item),
           // 点赞的用户
           _buildLikeList(item),
@@ -360,10 +379,14 @@ class _TimeLinePageState extends State<TimeLinePage>
     );
   }
 
-//  帖子主要内容
+  // 帖子主要内容,包括正文 图片 视频
+  // 传入的参数是本条朋友圈内容的数据
   Widget _buildMainContent(Result item) {
     // 获取图片数
     int imgCount = item.images.length;
+
+    // 获取发布类型
+    var postType = item.postType;
 
     // 更多按钮的key
     GlobalKey _btnMoreKey = GlobalKey();
@@ -410,7 +433,7 @@ class _TimeLinePageState extends State<TimeLinePage>
                 // ),
                 TextMaxLinesWidget(
                   content: item.content,
-                  maxLines: 2,
+                  maxLines: postType == PostType.text.name ? 8 : 3,
                 ),
                 const SpaceVerticalWidget(),
                 // 九宫格图片-如果有图片
@@ -433,25 +456,62 @@ class _TimeLinePageState extends State<TimeLinePage>
                 //     },
                 //   ),
                 // 方案二-Warp------------------------------------------------------
-                LayoutBuilder(
-                  builder: (layoutBuilderContext, constraints) {
-                    double imgWidth = imgCount == 1
-                        ? (constraints.maxWidth * 0.7)
-                        : (constraints.maxWidth - spacing * 2) / 3;
-                    return Wrap(
-                      spacing: 4,
-                      runSpacing: 4,
-                      children: item.images.map((e) {
-                        return Image.network(
-                          e,
-                          width: imgWidth,
-                          height: imgWidth,
-                          fit: BoxFit.cover,
-                        );
-                      }).toList(),
-                    );
-                  },
-                ),
+                if (item.postType == PostType.video.name)
+                  LayoutBuilder(
+                    builder: (ctx, constraints) {
+                      double placeHolderWidth = constraints.maxWidth * 0.7;
+                      return GestureDetector(
+                        onTap: (){
+                          _onNavigateToGalleryPage(data: item);
+                        },
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                          Image.network(
+                            item.video.cover,
+                            width: placeHolderWidth,
+                            height: placeHolderWidth,
+                            fit: BoxFit.cover,
+                          ),
+//                            播放图标
+                          const Positioned(
+                            child: Icon(
+                              Icons.play_circle_fill_outlined,
+                              color: Colors.white,
+                              size: 32,
+                            ),
+                          ),
+                        ],),
+                      );
+                    },
+                  ),
+
+                if (item.postType == PostType.image.name)
+                  LayoutBuilder(
+                    builder: (layoutBuilderContext, constraints) {
+                      double imgWidth = imgCount == 1
+                          ? (constraints.maxWidth * 0.7)
+                          : (constraints.maxWidth - spacing * 2) / 3;
+                      return Wrap(
+                        spacing: 4,
+                        runSpacing: 4,
+                        children: item.images.map((e) {
+                          return InkWell(
+                            onTap: () {
+                              // 传入的参数是本条朋友圈内容的数据
+                              _onNavigateToGalleryPage(data: item);
+                            },
+                            child: Image.network(
+                              e,
+                              width: imgWidth,
+                              height: imgWidth,
+                              fit: BoxFit.cover,
+                            ),
+                          );
+                        }).toList(),
+                      );
+                    },
+                  ),
                 const SpaceVerticalWidget(),
                 // 位置
                 Text(
@@ -764,9 +824,9 @@ class _TimeLinePageState extends State<TimeLinePage>
                         setState(() {
                           _isShowEmoji = !_isShowEmoji;
                         });
-                        if(_isShowEmoji){
+                        if (_isShowEmoji) {
                           _focusNodeInput.unfocus();
-                        }else {
+                        } else {
                           _focusNodeInput.requestFocus();
                         }
                       },
@@ -798,7 +858,8 @@ class _TimeLinePageState extends State<TimeLinePage>
                   height: _keyboardHeight,
                   child: GridView.builder(
                     itemCount: 50,
-                    gridDelegate:const SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
                       // 横轴上的组件数量
                       crossAxisCount: 5,
                       mainAxisSpacing: 10,

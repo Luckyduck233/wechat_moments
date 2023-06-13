@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:wechat_moments/pages/index.dart';
+import 'package:wechat_moments/widgets/global.dart';
 
 void main() {
   runApp(const MyApp());
@@ -25,6 +26,9 @@ class _MyAppState extends State<MyApp> {
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      navigatorObservers: [
+        Global.routeObserver
+      ],
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),

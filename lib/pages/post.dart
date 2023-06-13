@@ -8,6 +8,7 @@ import '../entity/index.dart';
 enum PostType {
   image,
   video,
+  text,
 }
 
 class PostEditPage extends StatefulWidget {
